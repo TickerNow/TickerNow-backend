@@ -8,6 +8,7 @@ import time
 import requests
 from bs4 import BeautifulSoup
 import csv
+import os
 
 def get_news_links(driver, pages):
     """뉴스 링크 수집 함수"""
@@ -71,12 +72,22 @@ def get_news_contents(link_list):
 
     return results
 
-def save_to_csv(news_data, filename):
-    """csv 파일 저장장"""
-    with open(filename, mode='w', encoding='utf-8-sig', newline='') as file:
-        writer = csv.DictWriter(file, fieldnames=['title', 'content','date','url'])
-        writer.writeheader()  # 헤더 쓰기
+
+def save_to_csv(news_data, filename="news_data.csv"):
+    # 현재 실행 중인 .py 파일의 디렉토리 기준
+    base_dir = os.path.dirname(os.path.abspath(__file__))
+
+    folder_path = os.path.join(base_dir, "csv_folder")
+    
+    os.makedirs(folder_path, exist_ok=True)  # 폴더 없으면 생성
+
+    full_path = os.path.join(folder_path, filename)
+
+    with open(full_path, mode='w', encoding='utf-8-sig', newline='') as file:
+        writer = csv.DictWriter(file, fieldnames=['title', 'content', 'date', 'url'])
+        writer.writeheader()
         for news in news_data:
             writer.writerow(news)
 
-    print(f"[INFO] {filename} 파일로 저장 완료!")
+    print(f"[INFO] {full_path} 파일로 저장 완료!")
+
