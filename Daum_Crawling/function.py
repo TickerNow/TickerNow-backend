@@ -73,7 +73,7 @@ def get_news_contents(link_list):
     return results
 
 
-def save_to_csv(news_data, filename="news_data.csv"):
+def save_to_csv(news_data, filename="data.csv"):
     # 현재 실행 중인 .py 파일의 디렉토리 기준
     base_dir = os.path.dirname(os.path.abspath(__file__))
 
@@ -88,6 +88,6 @@ def save_to_csv(news_data, filename="news_data.csv"):
         writer.writeheader()
         for news in news_data:
             writer.writerow(news)
-
+    
     print(f"[INFO] {full_path} 파일로 저장 완료!")
 
