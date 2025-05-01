@@ -45,7 +45,5 @@ time.sleep(2)
 
 news_links = f.get_news_links(driver, int(page_count))  # 수집한 링크
 news_data = f.get_news_contents(news_links)  # 본문 수집
-# print(news_links)
-# print(news_data)
 f.save_to_csv(news_data,f"data_{search}.csv") #수집한 타이틀, 내용, 제목, 링크를 csv파일로 저장장
 op.run(search) #OpenAI 모듈 실행
