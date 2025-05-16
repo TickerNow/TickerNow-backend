@@ -5,8 +5,12 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 import pyperclip
 import time
-import function as f
+import search_function as f
 import OpenAI as op
+import pandas as pd
+import financial_function as ff
 
-f.daum_search()
+
+ff.financial_search() # 다음 증권 크롤링
+#f.daum_search()
 #op.run(search) #OpenAI 모듈 실행
