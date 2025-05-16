@@ -1,6 +1,6 @@
 create schema news_project;
 # drop schema news_project;
-# drop table news_project.search_information;
+drop table news_project.search_information;
 
 
 create table news_project.search_information(
