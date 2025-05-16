@@ -182,7 +182,7 @@ def financial_search():
     init = 0 # 현재 주가 테이블의 첫 페이지는 i가 0 부터 시작하지만 다음 페이지 부터는 3부터 시작하기 때문에 첫 페이지 구별을 위한 변수
     count = 1 # 총 크롤링 페이지 수 카운트
 
-    while (count<=int(page_count)):
+    while (count<int(page_count)+1):
         try:
             # 1. 현재 페이지의 테이블 행 수집
             rows = driver.find_elements(By.XPATH, '//*[@id="boxDayHistory"]/div/div[2]/div/table/tbody/tr')
