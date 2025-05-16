@@ -174,7 +174,7 @@ def save_to_database_search_information(search):
         driver="com.mysql.cj.jdbc.Driver",
         dbtable="search_information",  # 저장할 테이블 이름
         user="root",
-        password= '5941'
+        password= 
     ).mode("append").save()
 
     spark.stop()
