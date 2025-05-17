@@ -13,6 +13,16 @@
 
 ---
 
+## 📌 주요 기능
+
+- 주식 정보 수집 (Daum 증권 크롤링)
+- 기업명 기반 최신 뉴스 크롤링
+- OpenAI API를 활용한 뉴스 요약
+- 수집된 데이터의 Spark 기반 가공 및 저장
+- MySQL DB 연동
+
+---
+
 ## 🛠 사용 기술
 
 <p align="left">
@@ -21,12 +31,3 @@
   <img src="https://img.shields.io/badge/Apache%20Spark-E25A1C?style=for-the-badge&logo=apachespark&logoColor=white" alt="Apache Spark Badge"/>
 </p>
 
----
-
-## 📌 주요 기능
-
-- 종목 코드 기반 주식 정보 수집 (Daum 증권 크롤링)
-- 기업명 기반 최신 뉴스 크롤링
-- OpenAI API를 활용한 뉴스 요약
-- 수집된 데이터의 Spark 기반 가공 및 저장
-- MySQL DB 연동
