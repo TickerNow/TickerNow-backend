@@ -180,9 +180,8 @@ def save_to_database_search_information(stock_name):
         #.config("spark.jars", "file:///C:/mysql-connector-j-8.3.0/mysql-connector-j-8.3.0.jar") \
 
     #읽어올 csv 파일 설정
-    pdf = pd.read_csv(fr'C:/JaeHyeok/Crawling/Daum_Crawling/csv_folder/financial_data/daum_financial_{stock_name}.csv') # search_information의 csv 파일
-
-    sdf = spark.createDataFrame(pdf) #csv 파일을 스파크 데이터프레임으로 변경
+    file_path = f'C:/JaeHyeok/Crawling/Daum_Crawling/csv_folder/financial_data/daum_financial_{stock_name}.csv'
+    sdf = spark.read.option("header", True).csv(file_path) #spark DataFrame으로 변환
 
     #jdbc를 사용하여 MySQL 연결
     sdf.write.format("jdbc").options(
