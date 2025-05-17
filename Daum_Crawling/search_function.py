@@ -16,10 +16,10 @@ import pandas as pd
 import pyperclip
 
 
-def daum_search():
+def daum_search(search, page_count):
     '''셀레니움과 BeautifulSoup를 사용하여 Daum 검색창에서 기업 검색 후 해당 기업의 뉴스를 크롤링하고 csv로 저장 후 MySQL의 DB에 저장하는 함수'''
-    search = input("검색 하세요 : ")
-    page_count = input("원하는 페이지 수 : ")
+    # search = input("검색 하세요 : ")
+    # page_count = input("원하는 페이지 수 : ")
     url = 'https://www.daum.net/'
     driver = webdriver.Chrome()
     driver.get(url)
@@ -52,11 +52,13 @@ def daum_search():
             continue
 
     time.sleep(2)
-
+    
     news_links = get_news_links(driver, int(page_count))  # 수집한 링크
+    driver.close()
     news_data = get_news_contents(news_links)  # 본문 수집
     save_to_csv(news_data,f"daum_search_data_{search}.csv") #다음 검색 -> 수집한 타이틀, 내용, 날짜, 링크를 csv파일로 저장
     save_to_database_search_information(search)
+    
 
 def get_news_links(driver, pages):
     """뉴스 링크 수집 함수 -> daum_search() 함수에 사용"""
@@ -123,7 +125,7 @@ def get_news_contents(link_list):
 
 def save_to_csv(news_data, filename="data.csv"):
     base_dir = os.path.dirname(os.path.abspath(__file__))
-    folder_path = os.path.join(base_dir, "csv_folder")
+    folder_path = os.path.join(base_dir, "csv_folder/daum_news_data")
     os.makedirs(folder_path, exist_ok=True)
 
     full_path = os.path.join(folder_path, filename)
@@ -164,7 +166,7 @@ def save_to_database_search_information(search):
         #.config("spark.jars", "file:///C:/mysql-connector-j-8.3.0/mysql-connector-j-8.3.0.jar") \
 
     #읽어올 csv 파일 설정
-    pdf = pd.read_csv(fr'C:/JaeHyeok/Crawling/Daum_Crawling/csv_folder/daum_search_data_{search}.csv') # search_information의 csv 파일
+    pdf = pd.read_csv(fr'C:/JaeHyeok/Crawling/Daum_Crawling/csv_folder/daum_news_data/daum_search_data_{search}.csv') # search_information의 csv 파일
 
     sdf = spark.createDataFrame(pdf) #csv 파일을 스파크 데이터프레임으로 변경
 
@@ -174,7 +176,7 @@ def save_to_database_search_information(search):
         driver="com.mysql.cj.jdbc.Driver",
         dbtable="search_information",  # 저장할 테이블 이름
         user="root",
-        password= 
+        password= 5941
     ).mode("append").save()
 
     spark.stop()
