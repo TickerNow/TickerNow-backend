@@ -56,7 +56,7 @@ def daum_search(search, page_count):
     news_links = get_news_links(driver, int(page_count))  # 수집한 링크
     driver.close()
     news_data = get_news_contents(news_links)  # 본문 수집
-    save_to_csv(news_data,f"daum_search_data_{search}.csv") #다음 검색 -> 수집한 타이틀, 내용, 날짜, 링크를 csv파일로 저장
+    save_to_csv(news_data,f"daum_news_{search}.csv") #다음 검색 -> 수집한 타이틀, 내용, 날짜, 링크를 csv파일로 저장
     save_to_database_search_information(search)
     
 
@@ -166,10 +166,11 @@ def save_to_database_search_information(search):
         #.config("spark.jars", "file:///C:/mysql-connector-j-8.3.0/mysql-connector-j-8.3.0.jar") \
 
     #읽어올 csv 파일 설정
-    pdf = pd.read_csv(fr'C:/JaeHyeok/Crawling/Daum_Crawling/csv_folder/daum_news_data/daum_search_data_{search}.csv') # search_information의 csv 파일
+    file_path = f'C:/JaeHyeok/Crawling/Daum_Crawling/csv_folder/daum_news_data/daum_news_{search}.csv'
+    sdf = spark.read.option("header", True).csv(file_path) #spark DataFrame으로 변환
+    sdf = sdf.withColumn("date", to_date("date", "yyyy-MM-dd")) # 날짜 형식변환
 
-    sdf = spark.createDataFrame(pdf) #csv 파일을 스파크 데이터프레임으로 변경
-
+    print(sdf)
     #jdbc를 사용하여 MySQL 연결
     sdf.write.format("jdbc").options(
         url="jdbc:mysql://localhost:3306/news_project",  # DB 정보
