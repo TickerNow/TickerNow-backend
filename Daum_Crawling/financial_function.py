@@ -9,10 +9,9 @@ import pandas as pd
 import re
 import os 
 from pyspark.sql import SparkSession
+from pyspark.sql.functions import concat, lit, to_date, col, date_format
 
 def financial_search(search, page_count):
-    # search = input("검색 하세요 : ")
-    # page_count = input("원하는 페이지 수 : ")
     url = 'https://finance.daum.net/domestic'
     driver = webdriver.Chrome()
     driver.get(url)
@@ -69,7 +68,8 @@ def financial_search(search, page_count):
     stock_name = re.sub(r'\d+', '', stock_name.text)  # 정규식을 사용한 숫자(종목번호) 제거
     stock_name = stock_name.strip('-')  # 앞에 붙은 '-' 기호 제거
 
-    i=1 #페이지 버튼 클릭을 위한 변수
+    '주식 현재가 일자별 정보 페이지 크롤링 과정'
+    i=1 # 페이지 버튼 클릭을 위한 변수
     init = 0 # 현재 주가 테이블의 첫 페이지는 i가 0 부터 시작하지만 다음 페이지 부터는 3부터 시작하기 때문에 첫 페이지 구별을 위한 변수
     count = 1 # 총 크롤링 페이지 수 카운트
 
@@ -81,7 +81,7 @@ def financial_search(search, page_count):
                 tds = row.find_elements(By.TAG_NAME, "td")
                 record = [td.text.strip() for td in tds]
                 if len(record) == 8:  # 유효한 데이터만
-                    all_data.append(record)
+                    all_data.append(record) # 리스트에 정보 추가
 
             # 2. 페이지 버튼 클릭
             if init == 0 : # 첫번 째 전체 페이지 인 경우 
@@ -130,14 +130,11 @@ def financial_search(search, page_count):
     for col in ["open_price", "high_price", "low_price", "close_price", "price_change", "trading_volume"]:
         df[col] = df[col].str.replace("▲", "").str.replace("▼", "").str.replace(",", "").astype(str)
     
-    # 5.가격, 볼륨 등을 정수형으로 변환
+    # 5.가격, 볼륨 등을 int 타입으로 변환
     for col in ['open_price', 'high_price', 'low_price','close_price','trading_volume']:
         df[col] = df[col].astype(int)
-
-    # 6.날짜 형식 변환 적용
-    df['date'] = df['date'].apply(convert_date_format)
     
-    # 7.DataFrame에 종목이름 추가
+    # 6.DataFrame에 종목이름 추가
     df['name'] = stock_name 
     df = df[['name', "open_price", "high_price", "low_price", "close_price", "price_change", "change_rate", "trading_volume","date"]]
 
@@ -147,14 +144,6 @@ def financial_search(search, page_count):
     # pd.set_option('display.max_rows', None)
     # print(df)
     
-
-def convert_date_format(date_str): 
-    '''기존 25.01.01 형식 날짜 형식을 2025-01-01 형식으로 변환하는 함수'''
-    try:
-        return pd.to_datetime("20" + date_str, format='%Y.%m.%d').strftime('%Y-%m-%d')
-    except:
-        return None  # 변환 실패 시 None
-
 def save_to_csv(df, filename):
     base_dir = os.path.dirname(os.path.abspath(__file__))
     folder_path = os.path.join(base_dir, "csv_folder/financial_data")
@@ -166,7 +155,7 @@ def save_to_csv(df, filename):
     print(f"[INFO] CSV 저장 완료: {full_path}")
 
 def save_to_database_search_information(stock_name):
-    '''MySQL의 DB에 저장하는 함수 -> daum_search() 함수에 사용'''
+    '''MySQL의 DB에 저장하는 함수'''
     os.environ["PYSPARK_PYTHON"] = "C:/Users/jaehy/anaconda3/python.exe" # 파이썬 경로를 지정하니까 코드가 돌아감
 
     spark = SparkSession.builder \
@@ -182,6 +171,11 @@ def save_to_database_search_information(stock_name):
     #읽어올 csv 파일 설정
     file_path = f'C:/JaeHyeok/Crawling/Daum_Crawling/csv_folder/financial_data/daum_financial_{stock_name}.csv'
     sdf = spark.read.option("header", True).csv(file_path) #spark DataFrame으로 변환
+    
+    # DB에 적재하기 위한 date 형식 변환
+    sdf = sdf.withColumn("date", concat(lit("20"), col("date")))
+    sdf = sdf.withColumn("date", to_date(col("date"), "yyyy.MM.dd"))
+    sdf = sdf.withColumn("date", date_format("date", "yyyy-MM-dd"))
 
     #jdbc를 사용하여 MySQL 연결
     sdf.write.format("jdbc").options(
