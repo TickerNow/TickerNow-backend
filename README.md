@@ -10,6 +10,7 @@
 - `main.py` : 전체 기능을 실행하는 메인 진입점
 - `financial_function.py` : Daum 증권에서 종목 정보를 크롤링하는 함수 모듈
 - `search_function.py` : Daum 포털에서 기업명을 검색하여 관련 뉴스 정보를 수집하는 함수 모듈
+- `stock_news_function.py` : Daum 증권의 최신 주식 뉴스를 불러오는 모듈
 - `OpenAI.py` : OpenAI API를 활용한 뉴스 요약 등의 기능을 수행하는 모듈
 
 ---
@@ -27,8 +28,10 @@
 ## 🛠 사용 기술
 
 <p align="left">
-  <img src="https://img.shields.io/badge/Python-3776AB?style=for-the-badge&logo=python&logoColor=white" alt="Python Badge"/>
-  <img src="https://img.shields.io/badge/MySQL-4479A1?style=for-the-badge&logo=mysql&logoColor=white" alt="MySQL Badge"/>
   <img src="https://img.shields.io/badge/Apache%20Spark-E25A1C?style=for-the-badge&logo=apachespark&logoColor=white" alt="Apache Spark Badge"/>
+  <img src="https://img.shields.io/badge/MySQL-4479A1?style=for-the-badge&logo=mysql&logoColor=white" alt="MySQL Badge"/>
+  <img src="https://img.shields.io/badge/Python-3776AB?style=for-the-badge&logo=python&logoColor=white" alt="Python Badge"/>
+  <img src="https://img.shields.io/badge/Selenium-43B02A?style=for-the-badge&logo=selenium&logoColor=white" alt="Selenium Badge"/>
+  <img src="https://img.shields.io/badge/JSON-000000?style=for-the-badge&logo=json&logoColor=white" alt="JSON Badge"/>
 </p>
 
