@@ -36,7 +36,7 @@ def daum_search(search, page_count):
     driver.find_element(By.XPATH, '//*[@id="q"]').send_keys(Keys.CONTROL + 'v')
     time.sleep(1)
 
-    #검색 버튼 클릭릭
+    #검색 버튼 클릭
     driver.find_element(By.XPATH, '//*[@id="daumSearch"]/fieldset/div/div/button[3]').click()
     time.sleep(2)
 
@@ -135,17 +135,6 @@ def save_to_csv(news_data, filename="data.csv"):
         writer.writeheader()
         
         for news in news_data:
-            # date가 문자열일 경우 datetime 객체로 변환 후 포맷 변환
-            # 예: 원본 '2025-04-25 10:21:00' -> '04/25/2025'
-            original_date = news['date']
-            if isinstance(original_date, str):
-                # 원본 포맷에 맞게 파싱, 예시로 ISO 형식 가정
-                dt = datetime.strptime(original_date, "%Y. %m. %d. %H:%M")
-            else:
-            
-                dt = original_date  # 이미 datetime 객체라면 그대로 사용
-                
-            news['date'] = dt.strftime("%Y-%m-%d")  # MM/dd/yyyy 포맷으로 변환
             
             writer.writerow(news)
     
@@ -167,10 +156,18 @@ def save_to_database_search_information(search):
 
     #읽어올 csv 파일 설정
     file_path = f'C:/JaeHyeok/Crawling/Daum_Crawling/csv_folder/daum_news_data/daum_news_{search}.csv'
-    sdf = spark.read.option("header", True).csv(file_path) #spark DataFrame으로 변환
-    sdf = sdf.withColumn("date", to_date("date", "yyyy-MM-dd")) # 날짜 형식변환
+        
+    #spark DataFrame으로 변환, 
+    sdf = (spark.read.option("header", True)
+            .option("multiLine", True)            # 여러 줄 텍스트 처리
+            .option("escape", '"')                # 큰따옴표로 감싼 데이터 인식
+            .option("quote", '"')                 # 문자열 구분 따옴표
+            .csv(file_path))
+    
+    # DB에 적재하기 위한 date 형식 변환
+    sdf = sdf.withColumn("date", to_timestamp(col("date"), "yyyy. M. d. HH:mm"))
+    sdf = sdf.withColumn("date", date_format(col("date"), "yyyy-MM-dd")) 
 
-    print(sdf)
     #jdbc를 사용하여 MySQL 연결
     sdf.write.format("jdbc").options(
         url="jdbc:mysql://localhost:3306/news_project",  # DB 정보
