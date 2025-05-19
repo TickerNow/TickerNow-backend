@@ -26,5 +26,5 @@ create table news_project.daum_financial_stock_table(
 
 select *
 from news_project.daum_financial_stock_table
-where name LIKE '%SK%'
-ORDER BY date DESC ;
+where name LIKE '%포스코%'
+ORDER BY date desc ;
