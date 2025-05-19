@@ -11,7 +11,7 @@ import os
 from pyspark.sql import SparkSession
 from pyspark.sql.functions import concat, lit, to_date, col, date_format
 
-def financial_search(search, page_count):
+def financial_search(search):
     url = 'https://finance.daum.net/domestic'
     driver = webdriver.Chrome()
     driver.get(url)
@@ -73,7 +73,14 @@ def financial_search(search, page_count):
     init = 0 # 현재 주가 테이블의 첫 페이지는 i가 0 부터 시작하지만 다음 페이지 부터는 3부터 시작하기 때문에 첫 페이지 구별을 위한 변수
     count = 1 # 총 크롤링 페이지 수 카운트
 
-    while (count<=int(page_count)):
+    while(True): #while (count<=int(page_count)):
+        
+        #마지막 전 페이지 까지만 크롤링 하도록 함
+        next_page_btn = driver.find_elements(By.XPATH, '//*[@id="boxDayHistory"]/div/div[2]/div/div/a[13]')
+        if init == 1 and not next_page_btn:
+            print("다음 페이지 버튼이 더 이상 없습니다. 종료합니다.")
+            break
+
         try:
             # 1. 현재 페이지의 테이블 행 수집
             rows = driver.find_elements(By.XPATH, '//*[@id="boxDayHistory"]/div/div[2]/div/table/tbody/tr')
@@ -81,8 +88,9 @@ def financial_search(search, page_count):
                 tds = row.find_elements(By.TAG_NAME, "td")
                 record = [td.text.strip() for td in tds]
                 if len(record) == 8:  # 유효한 데이터만
-                    all_data.append(record) # 리스트에 정보 추가
-
+                    all_data.append(record) # 리스트에 정보 추가           
+            print(f"[INFO] {count}페이지 데이터 수집 완료!")     
+            
             # 2. 페이지 버튼 클릭
             if init == 0 : # 첫번 째 전체 페이지 인 경우 
                 if i == 10 : # 첫번 째 페이지를 모두 크롤링 한 경우 다음 페이지 버튼 클릭하고 init과 i 변수 초기화
@@ -101,23 +109,22 @@ def financial_search(search, page_count):
                     )
                     next_btn.click()
 
-
             elif init == 1 : # 첫번 째 전체 페이지를 모두 크롤링 한 다음 페이지 부터 적용
-                if i <= 12 : # 두번 째 이상 전체 페이지에서 다음 페이지의 인덱스가 12이기때문에, 전체 다음 페이지로 넘어가서 1단계인 전체 테이블 행을 수집한 후 그 다음 페지이의 인덱스인 3부터 수집한다.
+                if i>=3 and i <= 12 : # 두번 째 이상 전체 페이지에서 다음 페이지의 인덱스가 12이기때문에, 전체 다음 페이지로 넘어가서 1단계인 전체 테이블 행을 수집한 후 그 다음 페지이의 인덱스인 3부터 수집한다.
                     next_btn_xpath = f'//*[@id="boxDayHistory"]/div/div[2]/div/div/a[{i}]'
                     next_btn = WebDriverWait(driver, 3).until(
                         EC.element_to_be_clickable((By.XPATH, next_btn_xpath))
                     )
                     next_btn.click()
-                else : # 두번 째 이상 페이지에서 해당 전체 페이지를 모두 크롤링 한 경우 i 초기화
-                    i = 2
-            print(f"[INFO] {count}페이지 데이터 수집 완료!")                             
+                    if i==12 : # 두번 째 이상 페이지에서 해당 전체 페이지를 모두 크롤링 한 경우 i 초기화
+                        i = 2
+                        
             i += 1
             count += 1
             time.sleep(2)
 
         except Exception as e:
-            print(f"[INFO] 더 이상 페이지 없음 or 오류 발생: {e}")
+            print(f"[INFO] 더 이상 페이지 없음")
             break
     
     driver.close()
