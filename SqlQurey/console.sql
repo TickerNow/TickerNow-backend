@@ -24,7 +24,5 @@ create table news_project.daum_financial_stock_table(
     date DATE NOT NULL
 );
 
-select *
-from news_project.daum_financial_stock_table
-where name LIKE '%포스코%'
-ORDER BY date desc ;
+select distinct (name)
+from news_project.daum_financial_stock_table;
