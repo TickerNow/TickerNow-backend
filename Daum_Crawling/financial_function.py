@@ -11,7 +11,7 @@ import os
 from pyspark.sql import SparkSession
 from pyspark.sql.functions import concat, lit, to_date, col, date_format
 
-def financial_search(search):
+def financial_search(spark, search):
     url = 'https://finance.daum.net/domestic'
     driver = webdriver.Chrome()
     driver.get(url)
@@ -146,7 +146,7 @@ def financial_search(search):
     df = df[['name', "open_price", "high_price", "low_price", "close_price", "price_change", "change_rate", "trading_volume","date"]]
 
     save_to_csv(df,f'daum_financial_{stock_name}.csv')
-    save_to_database_search_information(stock_name)
+    save_to_database_search_information(spark, stock_name)
 
     # pd.set_option('display.max_rows', None)
     # print(df)
@@ -161,19 +161,19 @@ def save_to_csv(df, filename):
     df.to_csv(full_path, index=False, encoding="utf-8-sig")
     print(f"[INFO] CSV 저장 완료: {full_path}")
 
-def save_to_database_search_information(stock_name):
+def save_to_database_search_information(spark, stock_name):
     '''MySQL의 DB에 저장하는 함수'''
     os.environ["PYSPARK_PYTHON"] = "C:/Users/jaehy/anaconda3/python.exe" # 파이썬 경로를 지정하니까 코드가 돌아감
 
-    spark = SparkSession.builder \
-        .appName("MySQL Export") \
-        .config("spark.driver.memory", "4g") \
-        .config("spark.executor.memory", "4g") \
-        .config("spark.local.ip", "127.0.0.1") \
-        .config("spark.python.worker.memory", "2g") \
-        .config("spark.driver.extraClassPath", "C:/mysql-connector-j-8.3.0/mysql-connector-j-8.3.0.jar") \
-        .getOrCreate()
-        #.config("spark.jars", "file:///C:/mysql-connector-j-8.3.0/mysql-connector-j-8.3.0.jar") \
+    # spark = SparkSession.builder \
+    #     .appName("MySQL Export") \
+    #     .config("spark.driver.memory", "4g") \
+    #     .config("spark.executor.memory", "4g") \
+    #     .config("spark.local.ip", "127.0.0.1") \
+    #     .config("spark.python.worker.memory", "2g") \
+    #     .config("spark.driver.extraClassPath", "C:/mysql-connector-j-8.3.0/mysql-connector-j-8.3.0.jar") \
+    #     .getOrCreate()
+    #     #.config("spark.jars", "file:///C:/mysql-connector-j-8.3.0/mysql-connector-j-8.3.0.jar") \
 
     #읽어올 csv 파일 설정
     file_path = f'C:/JaeHyeok/Crawling/Daum_Crawling/csv_folder/financial_data/daum_financial_{stock_name}.csv'
@@ -192,5 +192,3 @@ def save_to_database_search_information(stock_name):
         user="root",
         password= 5941
     ).mode("append").save()
-
-    spark.stop()
