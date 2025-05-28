@@ -16,7 +16,7 @@ import pandas as pd
 import pyperclip
 
 
-def daum_search(search, page_count):
+def daum_search(spark, search, page_count):
     '''셀레니움과 BeautifulSoup를 사용하여 Daum 검색창에서 기업 검색 후 해당 기업의 뉴스를 크롤링하고 csv로 저장 후 MySQL의 DB에 저장하는 함수'''
     # search = input("검색 하세요 : ")
     # page_count = input("원하는 페이지 수 : ")
@@ -57,7 +57,7 @@ def daum_search(search, page_count):
     driver.close()
     news_data = get_news_contents(news_links)  # 본문 수집
     save_to_csv(news_data,f"daum_news_{search}.csv") #다음 검색 -> 수집한 타이틀, 내용, 날짜, 링크를 csv파일로 저장
-    save_to_database_search_information(search)
+    save_to_database_search_information(spark, search)
     
 
 def get_news_links(driver, pages):
@@ -140,19 +140,19 @@ def save_to_csv(news_data, filename="data.csv"):
     
     print(f"[INFO] {full_path} 파일로 저장 완료!")
 
-def save_to_database_search_information(search):
+def save_to_database_search_information(spark, search):
     '''MySQL의 DB에 저장하는 함수 -> daum_search() 함수에 사용'''
     os.environ["PYSPARK_PYTHON"] = "C:/Users/jaehy/anaconda3/python.exe" # 파이썬 경로를 지정하니까 코드가 돌아감
 
-    spark = SparkSession.builder \
-        .appName("MySQL Export") \
-        .config("spark.driver.memory", "4g") \
-        .config("spark.executor.memory", "4g") \
-        .config("spark.local.ip", "127.0.0.1") \
-        .config("spark.python.worker.memory", "2g") \
-        .config("spark.driver.extraClassPath", "C:/mysql-connector-j-8.3.0/mysql-connector-j-8.3.0.jar") \
-        .getOrCreate()
-        #.config("spark.jars", "file:///C:/mysql-connector-j-8.3.0/mysql-connector-j-8.3.0.jar") \
+    # spark = SparkSession.builder \
+    #     .appName("MySQL Export") \
+    #     .config("spark.driver.memory", "4g") \
+    #     .config("spark.executor.memory", "4g") \
+    #     .config("spark.local.ip", "127.0.0.1") \
+    #     .config("spark.python.worker.memory", "2g") \
+    #     .config("spark.driver.extraClassPath", "C:/mysql-connector-j-8.3.0/mysql-connector-j-8.3.0.jar") \
+    #     .getOrCreate()
+    #     #.config("spark.jars", "file:///C:/mysql-connector-j-8.3.0/mysql-connector-j-8.3.0.jar") \
 
     #읽어올 csv 파일 설정
     file_path = f'C:/JaeHyeok/Crawling/Daum_Crawling/csv_folder/daum_news_data/daum_news_{search}.csv'
@@ -176,5 +176,3 @@ def save_to_database_search_information(search):
         user="root",
         password= 5941
     ).mode("append").save()
-
-    spark.stop()
