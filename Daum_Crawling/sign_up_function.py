@@ -2,6 +2,7 @@ from pyspark.sql import Row
 from pyspark.sql.functions import lit
 
 def sign_up(spark, name, sex, age, birth_date, id, nickname, password, joined_at) :
+    """회원 정보 DB 저장장"""
     ip = "127.0.0.1"
     port = "3306" 
     user = 'root'
@@ -39,15 +40,7 @@ def sign_up(spark, name, sex, age, birth_date, id, nickname, password, joined_at
     return "회원가입이 완료 되었습니다."
     
 def id_check(spark, id):
-    # spark = SparkSession.builder \
-    #     .appName("MySQL Export") \
-    #     .config("spark.driver.memory", "4g") \
-    #     .config("spark.executor.memory", "4g") \
-    #     .config("spark.local.ip", "127.0.0.1") \
-    #     .config("spark.python.worker.memory", "2g") \
-    #     .config("spark.driver.extraClassPath", "C:/mysql-connector-j-8.3.0/mysql-connector-j-8.3.0.jar") \
-    #     .getOrCreate()
-
+    """ID 중복 체크"""
     ip = "127.0.0.1"
     port = "3306" 
     user = 'root'
@@ -71,17 +64,17 @@ def id_check(spark, id):
     df.createOrReplaceTempView("user_info")
 
     # 중복된 id가 존재하는지 확인
-    query = """
-        select count(distinct(id)) as count
+    query = f"""
+        select COUNT(*) as count
         from user_info
-        where id = '{id})' 
+        where id = '{id}' 
         """
     
-    id = spark.sql(query)
-
-    return int(id.first()[0]) # 0이 나와야 중복 id가 없다는 것
+    re = spark.sql(query)
+    return int(re.first()[0]) # 0이 나와야 중복 id가 없다는 것
 
 def nickname_check(spark, nickname) : 
+    """닉네임 중복 체크"""
     ip = "127.0.0.1"
     port = "3306" 
     user = 'root'
@@ -104,13 +97,13 @@ def nickname_check(spark, nickname) :
     # SQL문을 사용하기 위해 View를 생성
     df.createOrReplaceTempView("user_info")
 
-    # 중복된 id가 존재하는지 확인
-    query = """
-        select count(distinct(id)) as count
+    # 중복된 닉네임이이 존재하는지 확인
+    query = f"""
+        select count(distinct(nickname)) as count
         from user_info
-        where nickname = '{nickname})' 
+        where nickname = '{nickname}' 
         """
     
-    id = spark.sql(query)
+    nickname = spark.sql(query)
 
-    return int(id.first()[0]) # 0이 나와야 중복 닉네임이 없다는 것
+    return int(nickname.first()[0]) # 0이 나와야 중복 닉네임이 없다는 것
