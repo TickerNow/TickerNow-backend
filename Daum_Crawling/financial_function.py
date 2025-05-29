@@ -10,8 +10,12 @@ import re
 import os 
 from pyspark.sql import SparkSession
 from pyspark.sql.functions import concat, lit, to_date, col, date_format
+from selenium.webdriver.chrome.options import Options
 
 def financial_search(spark, search):
+    # chrome_options = Options()
+    # chrome_options.add_argument("--headless")  # 브라우저 창 없이 실행
+    # driver = webdriver.Chrome(options=chrome_options)
     url = 'https://finance.daum.net/domestic'
     driver = webdriver.Chrome()
     driver.get(url)
