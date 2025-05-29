@@ -4,10 +4,13 @@ import pandas as pd
 from bs4 import BeautifulSoup
 from selenium import webdriver
 import time
+from selenium.webdriver.chrome.options import Options
 
 def  stock_news():
     # 1. 셀레니움으로 페이지 열기
-    driver = webdriver.Chrome()
+    chrome_options = Options()
+    chrome_options.add_argument("--headless")  # 브라우저 창 없이 실행
+    driver = webdriver.Chrome(options=chrome_options)
     driver.get("https://finance.daum.net/news#stock")
     time.sleep(2)  # 페이지 렌더링 대기
 
@@ -41,12 +44,12 @@ def  stock_news():
                 date = parts[1].strip()
 
         news_data.append({
-            '제목': title,
-            '요약': text,
-            '이미지_URL': img_url,
-            '기사_URL': article_url,
-            '뉴스사': source,
-            '날짜': date
+            'title': title,
+            'summary': text,
+            'imageURL': img_url,
+            'newsURL': article_url,
+            'newsAgency': source,
+            'date': date
         })
 
     # 4. DataFrame 생성
