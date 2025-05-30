@@ -36,9 +36,12 @@ create table news_project.user_info(
     nickname text NOT NULL,
     id text NOT NULL,
     password text NOT NULL,
-    joined_at  DATE NOT NULL
+    joined_at  DATE NOT NULL,
+	is_admin INT NOT NULL DEFAULT 0,
+    CHECK (is_admin IN (0, 1))
 );
 
+-- 관리자의 is_admin 값은 1
 INSERT INTO news_project.user_info (name, sex, age, birth_date, nickname, id, password, joined_at)
 VALUES
   ('park', '남자', 20, '2000-05-02', '뭐야', 'dndjeh', '1111', '2024-05-02'),

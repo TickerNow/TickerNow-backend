@@ -1,6 +1,6 @@
 import daum_search_function as f
 import OpenAI as op
-import Daum_Crawling.stock_function as ff
+import stock_load_function as slf
 import stock_news_function as snf
 import sign_up_function as suf
 import database_search_stock_information_function as dbf
@@ -83,7 +83,7 @@ def run_stock_load(): # 기업 주식 정보 적재
             return jsonify({"error": "검색어(search)가 필요합니다."}), 400
 
         # 크롤링 후 DB 적재 실행
-        result = ff.stock_load(spark, search)
+        result = slf.stock_load(spark, search)
 
         return jsonify({
             "message": f"'{search}'에 대한 금융 정보 크롤링 및 저장이 완료되었습니다.",
