@@ -1,14 +1,16 @@
-import search_function as f
+import daum_search_function as f
 import OpenAI as op
-import financial_function as ff
+import Daum_Crawling.stock_function as ff
 import stock_news_function as snf
-import sign_up_function as su
+import sign_up_function as suf
+import database_search_stock_information_function as dbf
+import login_function as lf
+
 from flask import Flask, jsonify, request
 from pyspark.sql import SparkSession
 import os
 import signal
 import threading
-import signal
 from pydantic import BaseModel
 from typing import Optional
 from flask_cors import CORS  # 추가
@@ -39,16 +41,14 @@ class Request_sign_up_body(BaseModel):
     password: str
     joined_at: Optional[str] = None  # 가입일, 서버에서 자동 생성할 수도 있으니 Optional 처리
 
-
 app = Flask(__name__)
 
 CORS(
     app,
-    resources={r"/*": {"origins": "*"}},  # ✅ 모든 경로에 대해 모든 origin 허용
+    resources={r"/*": {"origins": "*"}},  # 모든 경로에 대해 모든 origin 허용
     allow_headers=["Content-Type", "Authorization", "ngrok-skip-browser-warning"],
     supports_credentials=True
 )
-
 
 @app.route("/")
 def index():
@@ -72,9 +72,9 @@ def run_stock_news():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
-@app.route('/financial_search', methods=['POST'])
-def run_financial_search(): # 기업 주식 정보 적재
-    '''기업의 주식 정보를 저장'''
+@app.route('/stock_load', methods=['POST'])
+def run_stock_load(): # 기업 주식 정보 적재
+    '''기업의 주식 정보를 Daum 증권에서 크롤링하여 DB에 적재'''
     try:
         data = request.get_json()
         search = data.get("search")
@@ -83,7 +83,7 @@ def run_financial_search(): # 기업 주식 정보 적재
             return jsonify({"error": "검색어(search)가 필요합니다."}), 400
 
         # 크롤링 후 DB 적재 실행
-        result = ff.financial_search(spark, search)
+        result = ff.stock_load(spark, search)
 
         return jsonify({
             "message": f"'{search}'에 대한 금융 정보 크롤링 및 저장이 완료되었습니다.",
@@ -95,8 +95,8 @@ def run_financial_search(): # 기업 주식 정보 적재
 
 
 @app.route('/daum_search', methods=['POST'])
-def run_daum_search():
-    '''Daum에서 기업 뉴스 크롤링 후 DB 저장'''
+def run_daum_news_load():
+    '''Daum에서 기업 뉴스 크롤링 후 DB 적재'''
     try:
         data = request.get_json()
         search = data.get("search")
@@ -107,7 +107,7 @@ def run_daum_search():
             return jsonify({"error": "search 와 page_count 값이 필요합니다."}), 400
 
         # 크롤링 함수 실행 (DB 저장)
-        f.daum_search(spark, search, int(page_count))
+        f.daum_news_load(spark, search, int(page_count))
 
         return jsonify({
             "message": f"'{search}' 에 대한 뉴스 {page_count} 페이지 크롤링 및 저장 완료"
@@ -115,7 +115,30 @@ def run_daum_search():
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500
-    
+
+@app.route('/DB_stock_search', methods=['POST'])
+def run_get_stock_data_from_db():
+    '''DB에서 조회한 주식 정보를 리턴'''
+    try:
+        data = request.get_json()
+        stock_name = data.get("stock_name")
+
+        # 유효성 검사
+        if not stock_name :
+            return jsonify({"error": "종목을 입력하세요."}), 400
+
+        # DB 조회
+        stock_json_list = dbf.get_stock_data_from_db(spark, stock_name)
+
+        # DB에 해당 종목이 없는 경우
+        if not stock_json_list:
+            return jsonify({"message": "해당 종목 정보가 없습니다."}), 404
+
+        return jsonify(stock_json_list), 200
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
 @app.route('/sign_id_check', methods=['POST'])
 def run_sign_id_check():
     '''회원가입 id 중복 확인'''
@@ -123,7 +146,7 @@ def run_sign_id_check():
         data = request.get_json()
         id = data.get("id")
 
-        if su.id_check(spark, id) == 0:
+        if suf.id_check(spark, id) == 0:
             return jsonify({
             "message": "해당 아이디는 사용 가능 합니다!"
         })
@@ -143,7 +166,7 @@ def run_sign_nickname_check():
         data = request.get_json()
         nickname = data.get("nickname")
 
-        if su.nickname_check(spark, nickname) == 0:
+        if suf.nickname_check(spark, nickname) == 0:
             return jsonify({
             "message": "해당 닉네임은 사용 가능 합니다!"
         })
@@ -155,9 +178,7 @@ def run_sign_nickname_check():
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500
-
-
-
+    
 @app.route('/sign_up', methods=['POST'])
 def run_sign_up():
     '''회원가입 로직'''
@@ -173,19 +194,19 @@ def run_sign_up():
         joined_at = data.get("joined_at") or datetime.now().strftime('%Y-%m-%d %H:%M:%S')
 
         # 아이디 중복 체크
-        if su.id_check(spark, id) != 0:
+        if suf.id_check(spark, id) != 0:
             return jsonify({
                 "error": "중복된 아이디가 존재합니다. 다른 아이디를 사용해주세요."
             }), 400
         
         # 닉네임 중복 체크
-        if su.nickname_check(spark, nickname) != 0:
+        if suf.nickname_check(spark, nickname) != 0:
             return jsonify({
                 "error": "중복된 닉네임이 존재합니다. 다른 닉네임을 사용해주세요."
             }), 400
 
         # 닉네임, 아이디 중복 없으면 회원가입 처리 (DB 저장 로직)
-        su.sign_up(spark, name, sex, age, birth_date, id, nickname, password, joined_at)
+        suf.sign_up(spark, name, sex, age, birth_date, id, nickname, password, joined_at)
 
         return jsonify({
             "message": "회원가입이 완료되었습니다.",
@@ -193,6 +214,34 @@ def run_sign_up():
 
     except Exception as e:
         traceback.format_exc()
+        return jsonify({"error": str(e)}), 500
+    
+@app.route('/login', methods=['POST'])
+def run_login():
+    '''로그인 로직'''
+    try:
+        data = request.get_json()
+        id = data.get("id")
+        password = data.get("password")
+
+        if not id or not password:
+            return jsonify({"error": "아이디 또는 비밀번호가 누락되었습니다."}), 400
+
+        login_result = lf.login(spark, id, password)
+
+        if isinstance(login_result, dict):  # 로그인 성공
+            token = lf.generate_jwt(login_result["id"], login_result["is_admin"], SECRET_KEY) # jwt 토큰 발급
+            return jsonify({
+                "message": "로그인이 완료되었습니다.",
+                "token": token,
+                "is_admin": login_result["is_admin"] # is_admin 값이 1인 경우 관리자 계정, 0인 경우 일반 회원
+            }), 200
+        
+        else:
+            return jsonify({"error": login_result}), 401
+
+    except Exception as e:
+        print(traceback.format_exc())
         return jsonify({"error": str(e)}), 500
         
 #op.run(search) #OpenAI 모듈 실행       
