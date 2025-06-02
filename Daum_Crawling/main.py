@@ -32,16 +32,6 @@ spark = SparkSession.builder \
     .config("spark.driver.extraClassPath", "C:/mysql-connector-j-8.3.0/mysql-connector-j-8.3.0.jar") \
     .getOrCreate()
 
-class Request_sign_up_body(BaseModel):
-    name: str
-    sex: str
-    age: int
-    birth_date: str        # YYYY-MM-DD 형식 문자열
-    id: str
-    nickname: str
-    password: str
-    joined_at: Optional[str] = None  # 가입일, 서버에서 자동 생성할 수도 있으니 Optional 처리
-
 app = Flask(__name__)
 
 CORS(
