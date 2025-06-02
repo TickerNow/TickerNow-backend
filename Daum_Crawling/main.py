@@ -6,7 +6,7 @@ import sign_up_function as suf
 import database_search_stock_information_function as dbf
 import login_function as lf
 
-from flask import Flask, jsonify, request
+from flask import Flask, jsonify, request, make_response
 from pyspark.sql import SparkSession
 import os
 import signal
@@ -16,6 +16,7 @@ from typing import Optional
 from flask_cors import CORS  # 추가
 import traceback
 from datetime import datetime
+from jwt import ExpiredSignatureError, InvalidTokenError
 
 os.environ["PYSPARK_PYTHON"] = "C:/Users/jaehy/anaconda3/python.exe"
 
@@ -186,7 +187,6 @@ def run_sign_up():
         data = request.get_json()
         name = data.get("name")
         sex = data.get("sex")
-        age = data.get("age")
         birth_date = data.get("birth_date")
         id = data.get("id")
         nickname = data.get("nickname")  # 닉네임도 받아야 함
@@ -206,7 +206,7 @@ def run_sign_up():
             }), 400
 
         # 닉네임, 아이디 중복 없으면 회원가입 처리 (DB 저장 로직)
-        suf.sign_up(spark, name, sex, age, birth_date, id, nickname, password, joined_at)
+        suf.sign_up(spark, name, sex, birth_date, id, nickname, password, joined_at)
 
         return jsonify({
             "message": "회원가입이 완료되었습니다.",
@@ -230,13 +230,17 @@ def run_login():
         login_result = lf.login(spark, id, password)
 
         if isinstance(login_result, dict):  # 로그인 성공
-            token = lf.generate_jwt(login_result["id"], login_result["is_admin"], SECRET_KEY) # jwt 토큰 발급
-            return jsonify({
+            token = lf.generate_jwt(login_result["id"], login_result['nickname'], login_result["is_admin"], SECRET_KEY)
+
+            # 응답 본문과 헤더 설정
+            response = make_response(jsonify({
                 "message": "로그인이 완료되었습니다.",
-                "token": token,
-                "is_admin": login_result["is_admin"] # is_admin 값이 1인 경우 관리자 계정, 0인 경우 일반 회원
-            }), 200
-        
+                "is_admin": login_result["is_admin"],
+                "nickname" : login_result['nickname']
+            }), 200)
+            response.headers["Authorization"] = f"Bearer {token}"
+            return response
+
         else:
             return jsonify({"error": login_result}), 401
 
@@ -244,6 +248,33 @@ def run_login():
         print(traceback.format_exc())
         return jsonify({"error": str(e)}), 500
         
+@app.route("/check-auth", methods=["GET"])
+def check_auth():
+    try:
+        # 1. 헤더에서 토큰 추출
+        auth_header = request.headers.get("Authorization")
+        if not auth_header or not auth_header.startswith("Bearer "):
+            return jsonify({"error": "토큰이 없거나 형식이 올바르지 않습니다."}), 401
+
+        token = auth_header.split(" ")[1]  # "Bearer <token>"에서 token만 추출
+
+        # 2. JWT 디코딩 및 검증
+        payload = jwt.decode(token, SECRET_KEY, algorithms=["HS256"])
+
+        # 3. 사용자 정보 확인 및 반환
+        return jsonify({
+            "user_id": payload.get("user_id"),
+            "is_admin": payload.get("is_admin"),
+            "nickname" : payload.get('nickname')
+        }), 200
+
+    except ExpiredSignatureError:
+        return jsonify({"error": "토큰이 만료되었습니다."}), 401
+    except InvalidTokenError:
+        return jsonify({"error": "유효하지 않은 토큰입니다."}), 401
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
 #op.run(search) #OpenAI 모듈 실행       
 
 @app.route('/shutdown', methods=['POST'])
