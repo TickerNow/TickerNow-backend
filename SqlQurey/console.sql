@@ -37,8 +37,7 @@ create table news_project.user_info(
     id text NOT NULL,
     password text NOT NULL,
     joined_at  DATE NOT NULL,
-	is_admin INT NOT NULL DEFAULT 0,
-    CHECK (is_admin IN (0, 1))
+    is_admin BOOLEAN NOT NULL DEFAULT FALSE
 );
 
 -- 관리자의 is_admin 값은 1
