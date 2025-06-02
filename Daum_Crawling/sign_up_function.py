@@ -1,7 +1,7 @@
 from pyspark.sql import Row
 from pyspark.sql.functions import lit
 from passlib.hash import bcrypt
-
+from datetime import datetime
 
 def sign_up(spark, name, sex, age, birth_date, id, nickname, password, joined_at) :
     """회원 정보 DB 저장"""
@@ -15,7 +15,12 @@ def sign_up(spark, name, sex, age, birth_date, id, nickname, password, joined_at
     url = f"jdbc:mysql://{ip}:{port}/{db}"
     
     hashed_password = bcrypt.hash(password) # 비밀번호를 해시 함수로 암호화 처리
-
+    
+    # 현재 날짜 기준 나이 계산
+    today = datetime.today()
+    birth_dt = datetime.strptime(birth_date, "%Y-%m-%d")
+    age = today.year - birth_dt.year - ((today.month, today.day) < (birth_dt.month, birth_dt.day))
+    
     # 1) 신규 사용자 정보를 담은 Row 객체 생성
     new_user = Row(
         name=name,
