@@ -11,12 +11,9 @@ from pyspark.sql import SparkSession
 import os
 import signal
 import threading
-from pydantic import BaseModel
-from typing import Optional
 from flask_cors import CORS  # 추가
 import traceback
-from datetime import datetime
-from jwt import ExpiredSignatureError, InvalidTokenError
+import jwt
 
 os.environ["PYSPARK_PYTHON"] = "C:/Users/jaehy/anaconda3/python.exe"
 
@@ -32,12 +29,16 @@ spark = SparkSession.builder \
     .config("spark.driver.extraClassPath", "C:/mysql-connector-j-8.3.0/mysql-connector-j-8.3.0.jar") \
     .getOrCreate()
 
+SECRET_KEY = '4746e1f397196e9837751fe3313aa031e5c227a18acb537eff754bff4413ed5384a178c233d37600f697444e4cec0165700701a4047209d8a2dd7b82a03f46fe'
+
 app = Flask(__name__)
 
 CORS(
     app,
-    resources={r"/*": {"origins": "*"}},  # 모든 경로에 대해 모든 origin 허용
+    #resources={r"/*": {"origins": "*"}},  # 모든 경로에 대해 모든 origin 허용
+    resources={r"/*": {"origins": "https://ec35-124-216-101-107.ngrok-free.app"}},
     allow_headers=["Content-Type", "Authorization", "ngrok-skip-browser-warning"],
+    expose_headers=["Authorization"],
     supports_credentials=True
 )
 
@@ -181,7 +182,8 @@ def run_sign_up():
         id = data.get("id")
         nickname = data.get("nickname")  # 닉네임도 받아야 함
         password = data.get("password")
-        joined_at = data.get("joined_at") or datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        joined_at = data.get("joined_at") #or datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        print(joined_at)
 
         # 아이디 중복 체크
         if suf.id_check(spark, id) != 0:
@@ -203,7 +205,7 @@ def run_sign_up():
         })
 
     except Exception as e:
-        traceback.format_exc()
+        print(traceback.format_exc())
         return jsonify({"error": str(e)}), 500
     
 @app.route('/login', methods=['POST'])
@@ -243,10 +245,11 @@ def check_auth():
     try:
         # 1. 헤더에서 토큰 추출
         auth_header = request.headers.get("Authorization")
-        if not auth_header or not auth_header.startswith("Bearer "):
+        #print(request.headers)
+        if not auth_header : #or not auth_header.startswith("Bearer "):
             return jsonify({"error": "토큰이 없거나 형식이 올바르지 않습니다."}), 401
 
-        token = auth_header.split(" ")[1]  # "Bearer <token>"에서 token만 추출
+        token = auth_header
 
         # 2. JWT 디코딩 및 검증
         payload = jwt.decode(token, SECRET_KEY, algorithms=["HS256"])
@@ -258,9 +261,9 @@ def check_auth():
             "nickname" : payload.get('nickname')
         }), 200
 
-    except ExpiredSignatureError:
+    except jwt.ExpiredSignatureError:
         return jsonify({"error": "토큰이 만료되었습니다."}), 401
-    except InvalidTokenError:
+    except jwt.InvalidTokenError:
         return jsonify({"error": "유효하지 않은 토큰입니다."}), 401
     except Exception as e:
         return jsonify({"error": str(e)}), 500
