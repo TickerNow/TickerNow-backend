@@ -51,3 +51,4 @@ drop table news_project.user_info;
 DELETE FROM news_project.user_info
 WHERE id = 'dndjeh';
 
+UPDATE news_project.user_info set is_admin=TRUE where id='test1';
