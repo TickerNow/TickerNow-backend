@@ -3,7 +3,7 @@ from pyspark.sql.functions import lit
 from passlib.hash import bcrypt
 from datetime import datetime
 
-def sign_up(spark, name, sex, age, birth_date, id, nickname, password, joined_at) :
+def sign_up(spark, name, sex, birth_date, id, nickname, password, joined_at) :
     """회원 정보 DB 저장"""
     ip = "127.0.0.1"
     port = "3306" 
@@ -35,6 +35,7 @@ def sign_up(spark, name, sex, age, birth_date, id, nickname, password, joined_at
 
     # 2) 단일 Row를 DataFrame으로 변환
     new_user_df = spark.createDataFrame([new_user])
+ 
 
     # 3) MySQL 테이블에 append 모드로 쓰기 (INSERT)
     new_user_df.write.format("jdbc") \
