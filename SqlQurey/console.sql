@@ -40,15 +40,12 @@ create table news_project.user_info(
     is_admin BOOLEAN NOT NULL DEFAULT FALSE
 );
 
--- 관리자의 is_admin 값은 1
-INSERT INTO news_project.user_info (name, sex, age, birth_date, nickname, id, password, joined_at)
-VALUES
-  ('park', '남자', 20, '2000-05-02', '뭐야', 'dndjeh', '1111', '2024-05-02'),
-  ('So', '여자', 21, '2003-07-14','아무거나', 'soso123', '2222', '2024-05-18'),
-  ('Kim','남자', 21,'2000-02-14', '이건아님','dign','3333','2025-04-12');
-
 drop table news_project.user_info;
-DELETE FROM news_project.user_info
-WHERE id = 'dndjeh';
 
-UPDATE news_project.user_info set is_admin=TRUE where id='test1';
+DELETE FROM news_project.user_info
+WHERE id = 'test' and is_admin = FALSE;
+
+UPDATE news_project.user_info set is_admin=TRUE where id='dndjeh';
+
+delete from news_project.daum_financial_stock_table
+where name = '삐아';
