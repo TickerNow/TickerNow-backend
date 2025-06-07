@@ -47,5 +47,12 @@ WHERE id = 'test' and is_admin = FALSE;
 
 UPDATE news_project.user_info set is_admin=TRUE where id='dndjeh';
 
-delete from news_project.daum_financial_stock_table
-where name = '삐아';
+CREATE TABLE conversation_history (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    user_id VARCHAR(100) NOT NULL,
+    role ENUM('user', 'assistant') NOT NULL,
+    content TEXT NOT NULL,
+    timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+
+# drop table conversation_history;
