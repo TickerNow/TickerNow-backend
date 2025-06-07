@@ -54,7 +54,7 @@ def daum_news_load(spark, search, page_count):
     news_links = get_news_links(driver, int(page_count))  # 수집한 링크
     driver.close()
     news_data = get_news_contents(news_links)  # 본문 수집
-    save_news_data_to_db(spark, news_data, table_name="search_information") #DB에 바로 적재
+    save_news_data_to_db(spark, search, news_data, table_name="search_information") #DB에 바로 적재
 
     ##csv 파일 저장 후 적재 함수
     # save_to_csv(news_data,f"daum_news_{search}.csv") #다음 검색 -> 수집한 타이틀, 내용, 날짜, 링크를 csv파일로 저장
@@ -169,11 +169,13 @@ def save_to_database_search_information(spark, search):
     ).mode("append").save()
 
 
-def save_news_data_to_db(spark, news_data, table_name="search_information"):
+def save_news_data_to_db(spark, search, news_data, table_name="search_information"):
     """크롤링한 뉴스 데이터를 DB에 직접 저장 (CSV 파일 없이)"""
     # Pandas DataFrame으로 변환
     pdf = pd.DataFrame(news_data)
 
+    pdf.insert(0, "search", search)
+    
     # Spark DataFrame으로 변환
     sdf = spark.createDataFrame(pdf)
 
