@@ -74,9 +74,21 @@ df = (spark.read.format("jdbc")
 )
 df.createOrReplaceTempView("search_information")
 
+#OpenAI 대화 기록 view 생성
+table_name = 'conversation_history'
+df = (spark.read.format("jdbc")
+    .option("url", url)
+    .option("driver", "com.mysql.cj.jdbc.Driver")
+    .option("dbtable", table_name)
+    .option("user", user)
+    .option("password", passwd)
+    .load()
+)
+df.createOrReplaceTempView("conversation_history")
+
 load_dotenv()
 SECRET_KEY = os.getenv("SECRET_KEY")
-print(SECRET_KEY)
+
 app = Flask(__name__)
 
 CORS(
@@ -285,7 +297,26 @@ def run_login():
     except Exception as e:
         print(traceback.format_exc())
         return jsonify({"error": str(e)}), 500
-        
+
+@app.route("/chat", methods=["POST"])
+def chat():
+    data = request.get_json()
+    user_id = data.get("user_id")
+    message = data.get("message")
+    search = data.get("search") #주식 종목 받아오기
+
+    if not user_id or not message:
+        return jsonify({"error": "user_id와 message는 필수입니다."}), 400
+
+    try:
+        reply = op.ask_gpt(spark, search, user_id, message)
+        return jsonify({"reply": reply}), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+
+
 @app.route("/check-auth", methods=["GET"])
 def check_auth():
     try:
