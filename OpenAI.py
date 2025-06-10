@@ -96,7 +96,7 @@ def save_message_to_spark(spark, search, user_id, role, content):
         **db_properties
     ).mode("append").save()
 
-def fetch_news_summary(spark, stock_name, max_count=5):
+def fetch_news_summary(spark, stock_name, max_count=10):
     # DB에서 해당 기업 뉴스 가져오기
     query = f"""
         SELECT title, content, date
