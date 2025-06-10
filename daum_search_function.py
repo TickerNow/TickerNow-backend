@@ -112,11 +112,20 @@ def get_news_contents(link_list):
             paragraphs = content_tag.find_all('p') if content_tag else []
             content = ' '.join([p.get_text().strip() for p in paragraphs])
 
+            # 이미지 url
+            link = soup.find('p', class_='link_figure')
+            if link:
+                img_tag = link.find('img')
+                img_url = img_tag.get('src') if img_tag else " "
+            else:
+                img_url = " "
+
             results.append({
                 'url': url,
                 'title': title,
                 'date' : date,
-                'content': content
+                'content': content,
+                'img_url' : img_url
             })
         except Exception as e:
             print(f"[ERROR] 크롤링 실패: {url} | {e}")
