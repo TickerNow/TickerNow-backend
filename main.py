@@ -94,7 +94,7 @@ app = Flask(__name__)
 CORS(
     app,
     #resources={r"/*": {"origins": "*"}},  # 모든 경로에 대해 모든 origin 허용
-    resources={r"/*": {"origins": "https://ec35-124-216-101-107.ngrok-free.app"}},
+    resources={r"/*": {"origins": "https://baf7-124-216-101-107.ngrok-free.app"}},
     allow_headers=["Content-Type", "Authorization", "ngrok-skip-browser-warning"],
     expose_headers=["Authorization"],
     supports_credentials=True
@@ -345,7 +345,6 @@ def check_auth():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
-#op.run(search) #OpenAI 모듈 실행       
 
 @app.route('/shutdown', methods=['POST'])
 def shutdown():
