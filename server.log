@@ -1,0 +1,34 @@
+2025-06-18 20:34:11,535 [INFO] [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://192.168.0.7:5000
+2025-06-18 20:34:11,535 [INFO] [33mPress CTRL+C to quit[0m
+2025-06-18 20:34:16,412 [INFO] [요청] IP: 124.216.101.107, OPTIONS /stock_news
+2025-06-18 20:34:16,412 [INFO] 127.0.0.1 - - [18/Jun/2025 20:34:16] "OPTIONS /stock_news HTTP/1.1" 200 -
+2025-06-18 20:34:16,497 [INFO] [요청] IP: 124.216.101.107, GET /stock_news
+2025-06-18 20:34:24,713 [INFO] 127.0.0.1 - - [18/Jun/2025 20:34:24] "GET /stock_news HTTP/1.1" 200 -
+2025-06-18 20:34:27,658 [INFO] [요청] IP: 124.216.101.107, OPTIONS /login
+2025-06-18 20:34:27,659 [INFO] 127.0.0.1 - - [18/Jun/2025 20:34:27] "OPTIONS /login HTTP/1.1" 200 -
+2025-06-18 20:34:27,751 [INFO] [요청] IP: 124.216.101.107, POST /login
+2025-06-18 20:34:29,273 [INFO] 127.0.0.1 - - [18/Jun/2025 20:34:29] "POST /login HTTP/1.1" 200 -
+2025-06-18 20:34:29,274 [INFO] Closing down clientserver connection
+2025-06-18 20:34:30,868 [INFO] [요청] IP: 124.216.101.107, OPTIONS /stock_news
+2025-06-18 20:34:30,868 [INFO] 127.0.0.1 - - [18/Jun/2025 20:34:30] "OPTIONS /stock_news HTTP/1.1" 200 -
+2025-06-18 20:34:30,870 [INFO] [요청] IP: 124.216.101.107, OPTIONS /check-auth
+2025-06-18 20:34:30,870 [INFO] 127.0.0.1 - - [18/Jun/2025 20:34:30] "OPTIONS /check-auth HTTP/1.1" 200 -
+2025-06-18 20:34:30,871 [INFO] [요청] IP: 124.216.101.107, OPTIONS /check-auth
+2025-06-18 20:34:30,871 [INFO] 127.0.0.1 - - [18/Jun/2025 20:34:30] "OPTIONS /check-auth HTTP/1.1" 200 -
+2025-06-18 20:34:30,953 [INFO] [요청] IP: 124.216.101.107, GET /stock_news
+2025-06-18 20:34:31,089 [INFO] [요청] IP: 124.216.101.107, GET /check-auth
+2025-06-18 20:34:31,090 [INFO] 127.0.0.1 - - [18/Jun/2025 20:34:31] "GET /check-auth HTTP/1.1" 200 -
+2025-06-18 20:34:31,176 [INFO] [요청] IP: 124.216.101.107, GET /check-auth
+2025-06-18 20:34:31,177 [INFO] 127.0.0.1 - - [18/Jun/2025 20:34:31] "GET /check-auth HTTP/1.1" 200 -
+2025-06-18 20:34:39,775 [INFO] 127.0.0.1 - - [18/Jun/2025 20:34:39] "GET /stock_news HTTP/1.1" 200 -
+2025-06-18 20:38:11,923 [INFO] [요청] IP: 124.216.101.107, OPTIONS /stock_news
+2025-06-18 20:38:11,924 [INFO] 127.0.0.1 - - [18/Jun/2025 20:38:11] "OPTIONS /stock_news HTTP/1.1" 200 -
+2025-06-18 20:38:12,014 [INFO] [요청] IP: 124.216.101.107, GET /stock_news
+2025-06-18 20:38:19,782 [INFO] 127.0.0.1 - - [18/Jun/2025 20:38:19] "GET /stock_news HTTP/1.1" 200 -
+2025-06-18 20:38:28,925 [INFO] [요청] IP: 124.216.101.107, OPTIONS /stock_news
+2025-06-18 20:38:28,925 [INFO] 127.0.0.1 - - [18/Jun/2025 20:38:28] "OPTIONS /stock_news HTTP/1.1" 200 -
+2025-06-18 20:38:29,015 [INFO] [요청] IP: 124.216.101.107, GET /stock_news
+2025-06-18 20:38:36,693 [INFO] 127.0.0.1 - - [18/Jun/2025 20:38:36] "GET /stock_news HTTP/1.1" 200 -
