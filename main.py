@@ -15,6 +15,7 @@ from flask_cors import CORS  # 추가
 import traceback
 import jwt
 from dotenv import load_dotenv
+import logging
 
 os.environ["PYSPARK_PYTHON"] = "C:/Users/jaehy/anaconda3/python.exe"
 
@@ -91,14 +92,35 @@ SECRET_KEY = os.getenv("SECRET_KEY")
 
 app = Flask(__name__)
 
+# @app.before_request
+# def log_request_info():
+#     ip = request.headers.get('X-Forwarded-For', request.remote_addr)
+#     print(f"[요청 로그] IP: {ip}, Path: {request.path}, Method: {request.method}")
+
+
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s [%(levelname)s] %(message)s',
+    handlers=[
+        logging.FileHandler("server.log", encoding='utf-8'),
+        logging.StreamHandler()  # 콘솔 출력도 원하면 추가
+    ]
+)
+
+@app.before_request
+def log_request_info():
+    ip = request.headers.get('X-Forwarded-For', request.remote_addr)
+    logging.info(f"[요청] IP: {ip}, {request.method} {request.path}")
+
 CORS(
     app,
     #resources={r"/*": {"origins": "*"}},  # 모든 경로에 대해 모든 origin 허용
-    resources={r"/*": {"origins": "https://baf7-124-216-101-107.ngrok-free.app"}},
+    resources={r"/*": {"origins": "https://c145-124-216-101-107.ngrok-free.app"}},
     allow_headers=["Content-Type", "Authorization", "ngrok-skip-browser-warning"],
     expose_headers=["Authorization"],
     supports_credentials=True
-)
+    )
+
 
 @app.route("/")
 def index():
@@ -352,6 +374,8 @@ def shutdown():
         os.kill(os.getpid(), signal.SIGINT)
     threading.Thread(target=stop_server).start()
     return "서버가 종료 중입니다..."
+
+
 
 if __name__ == "__main__":
     app.run(host='0.0.0.0',debug=False, use_reloader=False)
