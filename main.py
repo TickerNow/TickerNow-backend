@@ -337,7 +337,27 @@ def chat():
         return jsonify({"error": str(e)}), 500
 
 
+@app.route("/realtime_search", methods=["POST"])
+def run_realtime_search():
+    data = request.get_json()
+    search = data.get("search","")
+    
+    # SQL Injection 방지 (1): 파라미터 바인딩 방식은 spark.sql에서 직접 지원하지 않기 때문에,
+    # 최소한 값에 대한 escaping을 수동으로라도 처리하거나 검증해야 함
+    # 여기서는 아주 간단하게 %를 붙이고 ' 제거하는 방식으로 대체
+    safe_search = search.replace("'", "")  # 따옴표 제거
 
+    query = f"""
+    SELECT distinct(name)
+    FROM daum_financial_stock_table
+    WHERE name LIKE '%{safe_search}%'
+    """
+
+    df = spark.sql(query)
+    results = df.collect()
+    results_json = [row.asDict() for row in results]
+    print(results_json)
+    return jsonify(results_json), 200
 
 @app.route("/check-auth", methods=["GET"])
 def check_auth():
